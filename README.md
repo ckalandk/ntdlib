@@ -3,13 +3,16 @@
 A modern, header-only C++23 utility library designed specifically for
 **teaching** and **learning** the internals of thread safety,
 synchronization primitives, and modern C++ library architecture.
+This obviously a work in progres, many materials will be added in
+the near future, depending of the pace of the course.
 
 > [!IMPORTANT]
 > **Educational Purpose:** This library is built to demonstrate clean
 > API design, C++23 features (like `std::stacktrace` and `std::print`),
 > and robust CMake integration. While fully functional, it is intended
 > as a reference for students learning concurrent systems.
-
+> Right now classes and functions are no commented, we'll add
+> documentations in the future the explain every aspects of the library
 ---
 
 ## ✨ Features
@@ -24,6 +27,10 @@ lock a mutex it already owns.
 * **Integrated Diagnostics:** Automatically captures and prints a full
 `std::stacktrace` upon failure, showing exactly where the illegal lock occurred.
 * **Compatibility:** Works seamlessly with `std::lock_guard` and `std::unique_lock`.
+
+> NOTE
+> The current version of SafeMutex detects only self-deadlocks (recursive locking).
+> Support for transitive deadlock detection is planned for a future release.
 
 ### 🧵 `ntd::NamedThread`
 
