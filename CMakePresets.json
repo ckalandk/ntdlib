@@ -1,0 +1,125 @@
+{
+  "version": 8,
+  "$schema": "https://raw.githubusercontent.com/Kitware/CMake/v4.3.0/Help/manual/presets/schema.json",
+  "cmakeMinimumRequired": {
+    "major": 4,
+    "minor": 3,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo"
+      }
+    },
+    {
+      "name": "clang",
+      "displayName": "Clang C++23 configration",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS": "-stdlib=libc++",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld -stdlib=libc++ -rtlib=compiler-rt --unwindlib=libgcc",
+        "CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=lld -stdlib=libc++ -rtlib=compiler-rt",
+        "CMAKE_MODULE_LINKER_FLAGS": "-fuse-ld=lld -stdlib=libc++ -rtlib=compiler-rt"
+      }
+    },
+    {
+      "name": "gcc",
+      "displayName": "GCC C++23 configration",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "clang-debug",
+      "configurePreset": "clang",
+      "configuration": "Debug",
+      "jobs": 4
+    },
+    {
+      "name": "clang-release",
+      "configurePreset": "clang",
+      "configuration": "Release",
+      "jobs": 4
+    },
+    {
+      "name": "gcc-debug",
+      "configurePreset": "gcc",
+      "configuration": "Debug",
+      "jobs": 4
+    },
+    {
+      "name": "gcc-release",
+      "configurePreset": "gcc",
+      "configuration": "Release",
+      "jobs": 4
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "clang-debug",
+      "displayName": "Full workflow: Clang Debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang"
+        },
+        {
+          "type": "build",
+          "name": "clang-debug"
+        }
+      ]
+    },
+    {
+      "name": "clang-release",
+      "displayName": "Full workflow: Clang Release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang"
+        },
+        {
+          "type": "build",
+          "name": "clang-release"
+        }
+      ]
+    },
+    {
+      "name": "gcc-debug",
+      "displayName": "Full workflow: GCC Debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "gcc"
+        },
+        {
+          "type": "build",
+          "name": "gcc-debug"
+        }
+      ]
+    },
+    {
+      "name": "gcc-release",
+      "displayName": "Full workflow: GCC Release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "gcc"
+        },
+        {
+          "type": "build",
+          "name": "gcc-release"
+        }
+      ]
+    }
+  ]
+}
