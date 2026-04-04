@@ -129,6 +129,11 @@ public:
         _consumer_cv.notify_all();
     }
 
+    bool is_closed() const
+    {
+        return _closed;
+    }
+
 private:
     std::queue<Tp> _datas;
     mutable std::mutex _mutex;
