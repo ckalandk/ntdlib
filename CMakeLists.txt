@@ -17,6 +17,7 @@ target_sources(ntd INTERFACE
     include/ntd/namedthread.hpp
     include/ntd/safe_mutex.hpp
     include/ntd/sync_queue.hpp
+    include/ntd/utility.hpp
     include/ntd/detail/thread_utils.hpp
 )
 
