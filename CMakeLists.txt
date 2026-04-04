@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 4.3.0)
 
 project(ntd VERSION 1.0.0 LANGUAGES CXX)
 
+include(GNUInstallDirs)
+
 add_library(ntd INTERFACE)
 add_library(ntd::ntd ALIAS ntd)
 
@@ -30,11 +32,12 @@ endif()
 
 install(TARGETS ntd
     EXPORT ntd_targets
-    FILE_SET HEADERS DESTINATION include
+    FILE_SET HEADERS
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(EXPORT ntd_targets
     FILE ntdConfig.cmake
     NAMESPACE ntd::
-    DESTINATION lib/cmake/ntd
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ntd
 )
