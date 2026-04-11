@@ -12,7 +12,8 @@ template <typename Tp>
 class sync_queue
 {
 public:
-    explicit sync_queue(size_t capacity = 30) : _max_capacity(capacity)
+    explicit sync_queue(size_t capacity = 30)
+      : _max_capacity(capacity)
     {
     }
     sync_queue(const sync_queue &other)
