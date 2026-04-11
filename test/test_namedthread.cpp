@@ -71,11 +71,13 @@ TEST_CASE("NamedThread properly handles std::stop_token", "[named_thread]")
 
 TEST_CASE("NamedThread move semantics and swap", "[named_thread]")
 {
+    std::atomic<bool> started{false};
     std::atomic<bool> done{false};
 
     ntd::NamedThread t1("MoveMe",
                         [&](std::stop_token st)
                         {
+                            started = true;
                             while (!st.stop_requested())
                             {
                                 std::this_thread::yield();
@@ -104,9 +106,55 @@ TEST_CASE("NamedThread move semantics and swap", "[named_thread]")
     REQUIRE(!t3.joinable());
     REQUIRE(t4.joinable());
 
+    while (!started.load())
+    {
+        std::this_thread::yield();
+    }
     // Clean up
     t4.request_stop();
     t4.join();
 
     REQUIRE(done == true);
+}
+
+#include <atomic>
+#include <stdexcept>
+
+TEST_CASE("Deferred thread cleans up safely during exception unwinding",
+          "[named_thread]")
+{
+    std::atomic<bool> lambda_ran{false};
+
+    try
+    {
+        // 1. Create the deferred thread (it parks itself at the condition variable)
+        ntd::NamedThread t(ntd::launch::defered, "DangerThread",
+                           [&](std::stop_token st)
+                           {
+                               lambda_ran = true; // We should NEVER reach this line
+
+                               while (!st.stop_requested())
+                               {
+                                   std::this_thread::yield();
+                               }
+                           });
+
+        // 2. Simulate a catastrophic failure BEFORE calling t.run()
+        throw std::runtime_error("Simulated crash in main logic!");
+
+        t.run(); // This line is skipped due to the exception
+    }
+    catch (const std::runtime_error &e)
+    {
+        // 3. We catch the exception.
+        // Because of stack unwinding, 't' went out of scope and its destructor
+        // has completely finished running by the time we enter this catch block.
+        REQUIRE(std::string(e.what()) == "Simulated crash in main logic!");
+    }
+
+    // 4. The Ultimate Verification:
+    // If the test reaches this line without hanging, it proves your destructor
+    // successfully woke up the parked thread and joined it.
+    // If lambda_ran is false, it proves your early-exit optimization worked!
+    REQUIRE(lambda_ran == false);
 }

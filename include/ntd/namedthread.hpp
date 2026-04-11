@@ -2,7 +2,9 @@
 
 #include "ntd/detail/thread_utils.hpp"
 #include <concepts>
+#include <condition_variable>
 #include <functional>
+#include <mutex>
 #include <ntd/detail/thread_utils.hpp>
 #include <string_view>
 #include <thread>
@@ -23,15 +25,24 @@ inline void set_name(std::string_view new_name)
 }
 } // namespace this_thread
 
+enum class launch
+{
+    immediate,
+    defered
+};
+
 class NamedThreadImpl
 {
 public:
     using native_handle_type = std::jthread::native_handle_type;
 
 public:
-    NamedThreadImpl() noexcept = default;
+    NamedThreadImpl() : _m_name{}, _thread{}, _state(std::make_shared<SharedState>())
+    {
+    }
 
-    explicit NamedThreadImpl(std::string_view name) : _m_name(name), _thread{}
+    explicit NamedThreadImpl(std::string_view name)
+        : _m_name(name), _thread{}, _state(std::make_shared<SharedState>())
     {
     }
 
@@ -45,15 +56,26 @@ public:
     NamedThreadImpl &operator=(const NamedThreadImpl &) = delete;
 
     template <typename Fn, typename... Args>
-    void start(Fn &&fn, Args &&...args)
+    void start(ntd::launch policy, Fn &&fn, Args &&...args)
     {
+        _state->is_started = (policy == ntd::launch::immediate);
         _thread = std::jthread(
-            [thread_name = _m_name]<typename CFn, typename... CArgs>(
+            [state = _state, thread_name = _m_name]<typename CFn, typename... CArgs>(
                 std::stop_token st, CFn &&captured_fn, CArgs &&...captured_args)
             {
-                this_thread::set_name(thread_name);
+                ntd::this_thread::set_name(thread_name);
+                {
+                    std::unique_lock lk(state->mtx);
+                    state->cv.wait(
+                        lk, [&state, &st]
+                        { return state->is_started || st.stop_requested(); });
+                }
                 if constexpr (std::is_invocable_v<CFn, std::stop_token, CArgs...>)
                 {
+                    if (st.stop_requested())
+                    {
+                        return;
+                    }
                     std::invoke(std::forward<CFn>(captured_fn), st,
                                 std::forward<CArgs>(captured_args)...);
                 }
@@ -120,6 +142,15 @@ public:
 private:
     std::string _m_name{};
     std::jthread _thread;
+
+protected:
+    struct SharedState
+    {
+        std::mutex mtx;
+        std::condition_variable cv;
+        bool is_started = false;
+    };
+    std::shared_ptr<SharedState> _state;
 };
 
 class NamedThread : private NamedThreadImpl
@@ -140,7 +171,18 @@ public:
             std::invocable<std::decay_t<Fn>, std::stop_token, std::decay_t<Args>...>)
     NamedThread(std::string_view name, Fn &&fn, Args &&...args) : Base(name)
     {
-        this->start(std::forward<Fn>(fn), std::forward<Args>(args)...);
+        this->start(ntd::launch::immediate, std::forward<Fn>(fn),
+                    std::forward<Args>(args)...);
+    }
+
+    template <typename Fn, typename... Args>
+        requires(
+            std::invocable<std::decay_t<Fn>, std::decay_t<Args>...> ||
+            std::invocable<std::decay_t<Fn>, std::stop_token, std::decay_t<Args>...>)
+    NamedThread(ntd::launch policy, std::string_view name, Fn &&fn, Args &&...args)
+        : NamedThread(name)
+    {
+        this->start(policy, std::forward<Fn>(fn), std::forward<Args>(args)...);
     }
     ~NamedThread() = default;
     NamedThread(NamedThread &&) noexcept = default;
@@ -156,6 +198,19 @@ public:
     using Base::joinable;
     using Base::native_handle;
     using Base::request_stop;
+
+    void run()
+    {
+        if (!_state)
+            return;
+        {
+            std::scoped_lock lk(_state->mtx);
+            if (_state->is_started)
+                return;
+            _state->is_started = true;
+        }
+        _state->cv.notify_all();
+    }
 
     void swap(NamedThread &other) noexcept
     {

@@ -25,6 +25,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
   target_link_libraries(ntd INTERFACE stdc++exp)
 endif()
 
+add_subdirectory(examples)
+
 option(NTD_BUILD_TESTS "Build the NTD library tests" OFF)
 if(NTD_BUILD_TESTS)
   enable_testing()
