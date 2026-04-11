@@ -44,14 +44,18 @@ debuggers and profilers.
 `std::jthread`.
 * **Stop Token Support:** Seamlessly handles cooperative cancellation via
 `std::stop_token`.
+* **Deferred execution:** Defer execution of the `NamedThread` and run it manually.
 
 ### 📥 `ntd::sync_queue<T>`
 
 A thread-safe, producer-consumer blocking queue.
 
-* **Bounded Capacity:** Prevents memory exhaustion by blocking producers when the queue is full.
-* **Multiple Modes:** Supports both blocking (`async_pop`) and non-blocking (`try_pop`) operations.
-* **Graceful Shutdown:** Provides a `close()` mechanism to safely wake up and terminate waiting consumers.
+* **Bounded Capacity:** Prevents memory exhaustion by blocking
+producers when the queue is full.
+* **Multiple Modes:** Supports both blocking (`async_pop`)
+and non-blocking (`try_pop`) operations.
+* **Graceful Shutdown:** Provides a `close()` mechanism to
+safely wake up and terminate waiting consumers.
 
 ---
 
@@ -61,7 +65,8 @@ A thread-safe, producer-consumer blocking queue.
 
 * **Compiler:** GCC 13+ or Clang 16+ (Required for C++23 features).
 * **Build System:** CMake 3.23+ and Ninja.
-* **Dependencies:** [Catch2 v3](https://github.com/catchorg/Catch2) (automatically managed via CMake `FetchContent`).
+* **Dependencies:** [Catch2 v3](https://github.com/catchorg/Catch2)
+(automatically managed via CMake `FetchContent`).
 
 ### Building and Testing
 
@@ -69,10 +74,10 @@ This project uses **CMake Presets** for a standardized developer workflow.
 
 ```bash
 # 1. Configure the project (using GCC)
-cmake --preset gcc-test
+cmake --preset gcc-debug
 
 # 2. Build the library and tests
-cmake --build --preset gcc-debug-test
+cmake --build --preset gcc-debug
 
 # 3. Run the test suite
 ctest --preset gcc-debug
