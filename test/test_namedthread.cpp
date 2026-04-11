@@ -1,8 +1,9 @@
 // test/test_named_thread.cpp
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
-#include <chrono>
+#include <chrono> //NOLINT
 #include <ntd/namedthread.hpp>
+#include <stdexcept>
 #include <string>
 
 using namespace std::chrono_literals;
@@ -31,8 +32,6 @@ TEST_CASE("NamedThread executes and sets thread name", "[named_thread]")
     t.join();
 
     REQUIRE(executed == true);
-    // Note: OS thread names are often truncated to 15 chars on Linux,
-    // so "TestWorker1" is safe.
     REQUIRE(internal_name == "TestWorker1");
 }
 
@@ -117,18 +116,13 @@ TEST_CASE("NamedThread move semantics and swap", "[named_thread]")
     REQUIRE(done == true);
 }
 
-#include <atomic>
-#include <stdexcept>
-
 TEST_CASE("Deferred thread cleans up safely during exception unwinding",
           "[named_thread]")
 {
     std::atomic<bool> lambda_ran{false};
-
     try
     {
-        // 1. Create the deferred thread (it parks itself at the condition variable)
-        ntd::NamedThread t(ntd::launch::defered, "DangerThread",
+        ntd::NamedThread t(ntd::launch::deferred, "DangerThread",
                            [&](std::stop_token st)
                            {
                                lambda_ran = true; // We should NEVER reach this line
@@ -139,22 +133,12 @@ TEST_CASE("Deferred thread cleans up safely during exception unwinding",
                                }
                            });
 
-        // 2. Simulate a catastrophic failure BEFORE calling t.run()
         throw std::runtime_error("Simulated crash in main logic!");
-
-        t.run(); // This line is skipped due to the exception
+        t.run();
     }
     catch (const std::runtime_error &e)
     {
-        // 3. We catch the exception.
-        // Because of stack unwinding, 't' went out of scope and its destructor
-        // has completely finished running by the time we enter this catch block.
         REQUIRE(std::string(e.what()) == "Simulated crash in main logic!");
     }
-
-    // 4. The Ultimate Verification:
-    // If the test reaches this line without hanging, it proves your destructor
-    // successfully woke up the parked thread and joined it.
-    // If lambda_ran is false, it proves your early-exit optimization worked!
     REQUIRE(lambda_ran == false);
 }

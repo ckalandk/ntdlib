@@ -6,6 +6,7 @@
 #include <functional>
 #include <mutex>
 #include <ntd/detail/thread_utils.hpp>
+#include <ntd/safe_mutex.hpp>
 #include <string_view>
 #include <thread>
 #include <utility>
@@ -28,7 +29,7 @@ inline void set_name(std::string_view new_name)
 enum class launch
 {
     immediate,
-    defered
+    deferred
 };
 
 class NamedThreadImpl
@@ -65,17 +66,25 @@ public:
             {
                 ntd::this_thread::set_name(thread_name);
                 {
+                    std::stop_callback stop_cb(st,
+                                               [state]()
+                                               {
+                                                   std::scoped_lock lock(state->mtx);
+                                                   state->cv.notify_all();
+                                               });
                     std::unique_lock lk(state->mtx);
                     state->cv.wait(
                         lk, [&state, &st]
                         { return state->is_started || st.stop_requested(); });
                 }
+
+                if (st.stop_requested())
+                {
+                    return;
+                }
+
                 if constexpr (std::is_invocable_v<CFn, std::stop_token, CArgs...>)
                 {
-                    if (st.stop_requested())
-                    {
-                        return;
-                    }
                     std::invoke(std::forward<CFn>(captured_fn), st,
                                 std::forward<CArgs>(captured_args)...);
                 }

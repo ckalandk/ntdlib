@@ -60,7 +60,7 @@ int main()
 
     // 3. Deferred Launch (Your Custom Feature!)
     std::println("--- MAIN: Creating t3 as DEFERRED (Parked) ---");
-    ntd::NamedThread t3(ntd::launch::defered, "DeferredWorker", deferred_task,
+    ntd::NamedThread t3(ntd::launch::deferred, "DeferredWorker", deferred_task,
                         "Alpha Protocol");
 
     std::this_thread::sleep_for(
