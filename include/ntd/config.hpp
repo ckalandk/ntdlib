@@ -1,8 +1,6 @@
 #pragma once
 
-#include <version>
-
-#if __cplusplus < 202302L && (!defined(_MSVC_LANG) || _MSVC_LANG < 202302L)
+#if __cplusplus < 202100L && (!defined(_MSVC_LANG) || _MSVC_LANG < 202302L)
 #error                                                                                 \
     "This library requires C++23 or higher. Please check your compiler flags (e.g., -std=c++23 or /std:c++23)."
 #endif
@@ -43,12 +41,6 @@
 #define NTD_HAS_EXCEPTIONS 1
 #else
 #define NTD_HAS_EXCEPTIONS 0
-#endif
-
-#ifdef __cpp_lib_stacktrace
-#define NTD_USE_STACKTRACE 1
-#else
-#define NTD_USE_STACKTRACE 0
 #endif
 
 #if NTD_HAS_EXCEPTIONS

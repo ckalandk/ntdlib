@@ -4,9 +4,7 @@
 #include <format>
 #include <mutex>
 #include <ntd/config.hpp>
-#if NTD_USE_STACKTRACE
 #include <stacktrace>
-#endif
 #include <thread>
 
 namespace ntd
@@ -19,21 +17,9 @@ class SafeMutex
 public:
     void lock()
     {
-        auto curr_id = std::this_thread::get_id();
-        if (_owner.load(std::memory_order_relaxed) == curr_id)
-        {
-#if NTD_USE_STACKTRACE
-            auto stack_trace = std::stacktrace::current();
-#else
-            auto stack_trace = "Stacktrace is not supported on this compiler";
-#endif
-            auto msg = std::format(
-                "[FATAL] Double lock detected on thread {}!\nStacktrace:\n{}", curr_id,
-                stack_trace);
-            NTD_THROW(std::logic_error, msg);
-        }
+        auto id = _check_for_double_lock();
         _mutex.lock();
-        _owner.store(curr_id, std::memory_order_relaxed);
+        _owner.store(id, std::memory_order_relaxed);
     }
 
     void unlock()
@@ -44,25 +30,32 @@ public:
 
     bool try_lock()
     {
-        auto curr_id = std::this_thread::get_id();
-        if (_owner.load(std::memory_order_relaxed) == curr_id)
-        {
-#if NTD_USE_STACKTRACE
-            auto stack_trace = std::stacktrace::current();
-#else
-            auto stack_trace = "stacktrace not supported by this compiler";
-#endif
-            auto msg = std::format(
-                "[FATAL] Double lock detected on thread {}!\nStacktrace:\n{}", curr_id,
-                stack_trace);
-            NTD_THROW(std::logic_error, msg);
-        }
+        auto id = _check_for_double_lock();
         if (_mutex.try_lock())
         {
-            _owner.store(curr_id, std::memory_order_relaxed);
+            _owner.store(id, std::memory_order_relaxed);
             return true;
         }
         return false;
+    }
+
+private:
+    auto _check_for_double_lock() -> std::thread::id
+    {
+        auto curr_id = std::this_thread::get_id();
+        if (_owner.load(std::memory_order_relaxed) == curr_id)
+        {
+            std::ostringstream thread_oss;
+            thread_oss << curr_id;
+            std::ostringstream trace_oss;
+            auto trace = std::stacktrace::current();
+            trace_oss << trace;
+            auto msg = std::format(
+                "[FATAL] Double lock detected on thread {}!\nStacktrace:\n{}",
+                thread_oss.str(), trace_oss.str());
+            NTD_THROW(std::logic_error, msg);
+        }
+        return curr_id;
     }
 };
 } // namespace ntd
