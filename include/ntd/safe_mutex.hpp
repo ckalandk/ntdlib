@@ -4,7 +4,9 @@
 #include <format>
 #include <mutex>
 #include <ntd/config.hpp>
+#if NTD_USE_STACKTRACE
 #include <stacktrace>
+#endif
 #include <thread>
 
 namespace ntd
@@ -20,9 +22,14 @@ public:
         auto curr_id = std::this_thread::get_id();
         if (_owner.load(std::memory_order_relaxed) == curr_id)
         {
+#if NTD_USE_STACKTRACE
+            auto stack_trace = std::stacktrace::current();
+#else
+            auto stack_trace = "Stacktrace is not supported on this compiler";
+#endif
             auto msg = std::format(
                 "[FATAL] Double lock detected on thread {}!\nStacktrace:\n{}", curr_id,
-                std::stacktrace::current());
+                stack_trace);
             NTD_THROW(std::logic_error, msg);
         }
         _mutex.lock();
@@ -40,9 +47,14 @@ public:
         auto curr_id = std::this_thread::get_id();
         if (_owner.load(std::memory_order_relaxed) == curr_id)
         {
+#if NTD_USE_STACKTRACE
+            auto stack_trace = std::stacktrace::current();
+#else
+            auto stack_trace = "stacktrace not supported by this compiler";
+#endif
             auto msg = std::format(
                 "[FATAL] Double lock detected on thread {}!\nStacktrace:\n{}", curr_id,
-                std::stacktrace::current());
+                stack_trace);
             NTD_THROW(std::logic_error, msg);
         }
         if (_mutex.try_lock())
