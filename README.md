@@ -1,5 +1,10 @@
 # ntd Library 🛠️
 
+[![C++23 Build and Test](https://github.com/ckalandk/ntdlib/actions/workflows/ci.yml/badge.svg)](https://github.com/ckalandk/ntdlib/actions/workflows/ci.yml)
+![C++23](https://img.shields.io/badge/C++-23-blue.svg?style=flat&logo=c%2B%2B)
+![Platforms](https://img.shields.io/badge/Platforms-Linux%20%7C%20Windows-lightgrey.svg)
+![CMake](https://img.shields.io/badge/CMake-3.24+-success.svg?logo=cmake)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 A modern, header-only C++23 utility library designed specifically for
 **teaching** and **learning** the internals of thread safety,
 synchronization primitives, and modern C++ library architecture.
