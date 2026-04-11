@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.3.0)
+cmake_minimum_required(VERSION 3.24.0)
 
 project(ntd VERSION 1.0.0 LANGUAGES CXX)
 
@@ -21,11 +21,14 @@ target_sources(ntd INTERFACE
     include/ntd/detail/thread_utils.hpp
 )
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_link_libraries(ntd INTERFACE stdc++exp)
 endif()
 
-add_subdirectory(examples)
+option(NTD_BUILD_EXAMPLES "Build the ntd examples" OFF)
+if(NTD_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 option(NTD_BUILD_TESTS "Build the NTD library tests" OFF)
 if(NTD_BUILD_TESTS)
