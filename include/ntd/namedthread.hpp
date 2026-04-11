@@ -38,12 +38,17 @@ public:
     using native_handle_type = std::jthread::native_handle_type;
 
 public:
-    NamedThreadImpl() : _m_name{}, _thread{}, _state(std::make_shared<SharedState>())
+    NamedThreadImpl()
+      : _m_name{},
+        _thread{},
+        _state(std::make_shared<SharedState>())
     {
     }
 
     explicit NamedThreadImpl(std::string_view name)
-        : _m_name(name), _thread{}, _state(std::make_shared<SharedState>())
+      : _m_name(name),
+        _thread{},
+        _state(std::make_shared<SharedState>())
     {
     }
 
@@ -171,14 +176,16 @@ public:
 
 public:
     NamedThread() = default;
-    explicit NamedThread(std::string_view name) : Base(name)
+    explicit NamedThread(std::string_view name)
+      : Base(name)
     {
     }
     template <typename Fn, typename... Args>
         requires(
             std::invocable<std::decay_t<Fn>, std::decay_t<Args>...> ||
             std::invocable<std::decay_t<Fn>, std::stop_token, std::decay_t<Args>...>)
-    NamedThread(std::string_view name, Fn &&fn, Args &&...args) : Base(name)
+    NamedThread(std::string_view name, Fn &&fn, Args &&...args)
+      : Base(name)
     {
         this->start(ntd::launch::immediate, std::forward<Fn>(fn),
                     std::forward<Args>(args)...);
@@ -189,7 +196,7 @@ public:
             std::invocable<std::decay_t<Fn>, std::decay_t<Args>...> ||
             std::invocable<std::decay_t<Fn>, std::stop_token, std::decay_t<Args>...>)
     NamedThread(ntd::launch policy, std::string_view name, Fn &&fn, Args &&...args)
-        : NamedThread(name)
+      : NamedThread(name)
     {
         this->start(policy, std::forward<Fn>(fn), std::forward<Args>(args)...);
     }
