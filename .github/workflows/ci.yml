@@ -2,9 +2,18 @@ name: C++23 Build and Test
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
+    path-ignore: &ignored_paths
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.clangd'
+      - '.clang-format'
+      - '.clang-tidy'
+      - 'docs/**'
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
+    path-ignore: *ignored_paths
 
 jobs:
   build-and-test:

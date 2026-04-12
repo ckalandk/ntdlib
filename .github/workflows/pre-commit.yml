@@ -2,9 +2,17 @@ name: Pre-commit Checks
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
+    paths: &format_paths
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+      - '**.c'
+      - '.clang-format'
+      - 'CMakeLists.txt'
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
+    paths: *format_paths
 
 jobs:
   pre-commit:
