@@ -8,6 +8,7 @@
 #include <windows.h>
 #elif defined(NTD_OS_LINUX)
 #include <sys/prctl.h>
+constexpr size_t LINUX_NAME_MAX_LENGTH = 15;
 #else
 #error "Platform is not supported"
 #endif
@@ -20,7 +21,8 @@ inline void set_current_thread_name(std::string_view name)
     std::wstring wname(name.begin(), name.end());
     SetThreadDescription(GetCurrentThread(), wname.c_str());
 #elif defined(NTD_OS_LINUX)
-    prctl(PR_SET_NAME, name.substr(0, 15).data(), 0, 0, 0);
+    std::string short_name(name.substr(0, LINUX_NAME_MAX_LENGTH));
+    prctl(PR_SET_NAME, short_name.c_str(), 0, 0, 0);
 #endif
 }
 
@@ -37,10 +39,10 @@ inline std::string get_current_thread_name()
     }
     return "Unkown_thread";
 #elif defined(NTD_OS_LINUX)
-    char name_buffer[16]{};
+    char name_buffer[LINUX_NAME_MAX_LENGTH + 1]{}; // NOLINT
     if (prctl(PR_GET_NAME, name_buffer, 0, 0, 0) == 0)
     {
-        return std::string(name_buffer);
+        return name_buffer;
     }
     return "Unknown_thread";
 #endif

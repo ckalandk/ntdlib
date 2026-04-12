@@ -116,6 +116,7 @@ TEST_CASE("NamedThread move semantics and swap", "[named_thread]")
     REQUIRE(done == true);
 }
 
+// NOLINT
 TEST_CASE("Deferred thread cleans up safely during exception unwinding",
           "[named_thread]")
 {

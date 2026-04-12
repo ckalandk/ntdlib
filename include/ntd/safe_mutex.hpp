@@ -17,9 +17,9 @@ class SafeMutex
 public:
     void lock()
     {
-        auto id = _check_for_double_lock();
+        auto thread_id = _check_for_double_lock();
         _mutex.lock();
-        _owner.store(id, std::memory_order_relaxed);
+        _owner.store(thread_id, std::memory_order_relaxed);
     }
 
     void unlock()
@@ -30,10 +30,10 @@ public:
 
     bool try_lock()
     {
-        auto id = _check_for_double_lock();
+        auto thread_id = _check_for_double_lock();
         if (_mutex.try_lock())
         {
-            _owner.store(id, std::memory_order_relaxed);
+            _owner.store(thread_id, std::memory_order_relaxed);
             return true;
         }
         return false;
