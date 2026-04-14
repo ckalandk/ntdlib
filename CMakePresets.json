@@ -33,7 +33,8 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "g++",
-        "CMAKE_C_COMPILER": "gcc"
+        "CMAKE_C_COMPILER": "gcc",
+        "NTD_BUILD_EXAMPLES": "ON"
       }
     }
   ],

@@ -7,6 +7,7 @@
 
 using namespace std::chrono_literals;
 
+// NOLINTBEGIN
 void basic_task()
 {
     std::println("[Basic Task] Running immediately. No stop token needed");
@@ -79,3 +80,5 @@ int main()
     std::println("--- MAIN: End of scope reached. Destructors will auto-join. ---");
     return 0;
 }
+
+// NOLINTEND
