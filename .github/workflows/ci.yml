@@ -3,7 +3,7 @@ name: C++23 Build and Test
 on:
   push:
     branches: [ "main" ]
-    path-ignore: &ignored_paths
+    paths-ignore: &ignored_paths
       - '**.md'
       - 'LICENSE'
       - '.gitignore'
@@ -13,7 +13,7 @@ on:
       - 'docs/**'
   pull_request:
     branches: [ "main" ]
-    path-ignore: *ignored_paths
+    paths-ignore: *ignored_paths
 
 jobs:
   build-and-test:
